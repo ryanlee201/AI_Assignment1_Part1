@@ -275,13 +275,20 @@ class Graph(object):
                 self.nodes[(x,y)].type = 0
                 self.nodes[(x,y)].reachable = False
 
-
+    def update(self, gameStateObj):
+        self.update_flag = True
+        if gameStateObj['current_algorithm'] != self.current_algorithm:
+            self.change_algorithm(gameStateObj['current_algorithm'])
+        if self.update_flag:
+            self.update_flag = self.algorithm.update(self)
+        
 
     def draw(self, surf, gameStateObj):
         
         self.hard_traverse_generation()
         # self.highway_generation()
         self.blocked_generation()
+        # Algorithms.AStar(self.start_node,self.goal_node,self.nodes)
         surf.fill(colorDict.colorDict['white'])
         for position, node in self.nodes.iteritems():
             imageRect = pygame.Rect(node.x*TILESIZE, node.y*TILESIZE, 6, 6)
@@ -303,24 +310,24 @@ class Graph(object):
             # Draw outline
             pygame.draw.rect(surf, colorDict.colorDict['light_gray'], imageRect, 1)
 
+        
+        #     if isinstance(self.algorithm, Algorithms.Bidirectional):
+        #         for forward_path in self.algorithm.forward_path:
+        #             for index in range(len(forward_path) - 1):
+        #                 current = forward_path[index]
+        #                 next = forward_path[index + 1]
+        #                 old_pos = current.x*TILESIZE + TILESIZE/2 - 2, current.y*TILESIZE + TILESIZE/2 - 2
+        #                 new_pos = next.x*TILESIZE + TILESIZE/2 - 2, next.y*TILESIZE + TILESIZE/2 - 2
+        #                 pygame.draw.line(surf, colorDict.colorDict['dark_purple'], old_pos, new_pos, 4)
+        #         for backward_path in self.algorithm.backward_path:
+        #             for index in range(len(backward_path) - 1):
+        #                 current = backward_path[index]
+        #                 next = backward_path[index + 1]
+        #                 old_pos = current.x*TILESIZE + TILESIZE/2 - 2, current.y*TILESIZE + TILESIZE/2 - 2
+        #                 new_pos = next.x*TILESIZE + TILESIZE/2 - 2, next.y*TILESIZE + TILESIZE/2 - 2
+        #                 pygame.draw.line(surf, colorDict.colorDict['dark_purple'], old_pos, new_pos, 4)
         if DRAW_PATH:
-            if isinstance(self.algorithm, Algorithms.Bidirectional):
-                for forward_path in self.algorithm.forward_path:
-                    for index in range(len(forward_path) - 1):
-                        current = forward_path[index]
-                        next = forward_path[index + 1]
-                        old_pos = current.x*TILESIZE + TILESIZE/2 - 2, current.y*TILESIZE + TILESIZE/2 - 2
-                        new_pos = next.x*TILESIZE + TILESIZE/2 - 2, next.y*TILESIZE + TILESIZE/2 - 2
-                        pygame.draw.line(surf, colorDict.colorDict['dark_purple'], old_pos, new_pos, 4)
-                for backward_path in self.algorithm.backward_path:
-                    for index in range(len(backward_path) - 1):
-                        current = backward_path[index]
-                        next = backward_path[index + 1]
-                        old_pos = current.x*TILESIZE + TILESIZE/2 - 2, current.y*TILESIZE + TILESIZE/2 - 2
-                        new_pos = next.x*TILESIZE + TILESIZE/2 - 2, next.y*TILESIZE + TILESIZE/2 - 2
-                        pygame.draw.line(surf, colorDict.colorDict['dark_purple'], old_pos, new_pos, 4)
-
-            elif self.algorithm.came_from and self.goal_node in self.algorithm.came_from:
+            if self.algorithm.came_from and self.goal_node in self.algorithm.came_from:
                 current = self.goal_node
                 path = [current]
                 while current is not self.start_node:
@@ -366,13 +373,16 @@ def main():
                     'current_algorithm': 'Breadth First Search',
                     'lock_to_ui': False}
     my_graph = Graph()
-    my_graph.draw(DISPLAYSURF, gameStateObj)
-
-    # if start_pressed:
     my_graph.start()
+    my_graph.update(gameStateObj)
+    my_graph.draw(DISPLAYSURF, gameStateObj)
+    pygame.display.update()
+    FPSCLOCK.tick(FPS)
+    # if start_pressed:
+    
 
     # Update
-    my_graph.update(gameStateObj)
+    
     # Draw 
 
     pygame.display.update()
