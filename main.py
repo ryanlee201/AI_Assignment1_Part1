@@ -66,7 +66,6 @@ class Graph(object):
             if self.dist >= 100:
                 break
 
-        print self.start_x,self.start_y,self.goal_x,self.goal_y
         self.start_node = self.nodes[(self.start_x, self.start_y)]
         self.goal_node = self.nodes[(self.goal_x, self.goal_y)]
 
@@ -266,12 +265,23 @@ class Graph(object):
 
             for x,y in self.highway:
                 self.nodes[(x,y)].type = 'a'
-        
+
+
+    def blocked_generation(self):
+
+        for x,y in self.nodes:
+            if random.random() < .2:
+                # if self.nodes[(x,y)].type != 'a' | self.nodes[(x,y)].type != 'b':
+                self.nodes[(x,y)].type = 0
+                self.nodes[(x,y)].reachable = False
+
+
 
     def draw(self, surf, gameStateObj):
         
         self.hard_traverse_generation()
         # self.highway_generation()
+        self.blocked_generation()
         surf.fill(colorDict.colorDict['white'])
         for position, node in self.nodes.iteritems():
             imageRect = pygame.Rect(node.x*TILESIZE, node.y*TILESIZE, 6, 6)
