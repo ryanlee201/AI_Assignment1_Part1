@@ -274,6 +274,16 @@ class Queue:
     def get(self):
         return heapq.heappop(self.elements)[1]
 
+    def getFull(self):
+        return heapq.heappop(self.elements)
+
+    def remove(self, item):
+        if item in self.elements:
+            self.elements.remove(item)
+            heapq.heapify(self.elements)
+            return 0
+        return -1
+
 
 def heuristic(self, startx, starty, goalx, goaly, choice):
     start = (startx, starty)
@@ -283,19 +293,19 @@ def heuristic(self, startx, starty, goalx, goaly, choice):
     if choice == 1:  # manhattan
         heuristic = abs(int(startx) - int(goalx)) + abs(int(starty) - int(goaly))
         heuristic *= (
-            1.0 + (0.25 / 160))  # tie-breaker by multiplying the heuristic by (minimum cost)/(max possible path length)
+            1.0 + (0.25 / 160))
         return heuristic
     if choice == 2:  # euclidean
         heuristic = math.sqrt(((int(startx) - int(goalx)) ** 2) + ((int(starty) - int(goaly)) ** 2))
         heuristic *= (
-            1.0 + (0.25 / 160))  # tie-breaker by multiplying the heuristic by (minimum cost)/(max possible path length)
+            1.0 + (0.25 / 160))
         return heuristic
     if choice == 3:  # octile
         dx = abs(int(startx) - int(goalx))
         dy = abs(int(starty) - int(goaly))
         heuristic = (dx + dy) + (math.sqrt(2) - 2) * min(dx, dy)
         heuristic *= (
-            1.0 + (0.25 / 160))  # tie-breaker by multiplying the heuristic by (minimum cost)/(max possible path length)
+            1.0 + (0.25 / 160))
         return heuristic
     if choice == 4:  # Chebyshev
         heuristic = max(abs(startx - goalx), abs(starty - goaly))
@@ -384,138 +394,116 @@ class WeightedAStarSearch(AStarSearch):
 
     def heuristic(self, startx, starty, goalx, goaly, type):
         return super(WeightedAStarSearch, self).heuristic(startx, starty, goalx, goaly, type) * float(self.weight)
-
-#TODO: finish sequential A*
+#TODO: fix dysfunctionality of types
 class SequentialAStarSearch(AStarSearch):
-    def findPath(self, startx, starty, goalx, goaly, notused):
+    def findPath(self, startx, starty, goalx, goaly):
         fringe = [Queue() for x in range(5)]
         start = Point(startx, starty, None)
-        goal = (goalx, goaly)
-
-        closed_list = [dict() for y in range(0, 5)]
-        cost_added = [dict() for y in range(0, 5)]
-        heuristic_list = [dict() for y in range(0, 5)]
+        visited_cells = [dict() for y in range(0, 5)]
+        cost_accumulation = [dict() for y in range(0, 5)]
+        h_values = [dict() for y in range(0, 5)]
         final_path = []
-        priority_list = [dict() for y in range(0, 5)]
-        w2 = 1  # weight
+        pList = [dict() for y in range(0, 5)]
+        weight_val = 1.15  # weight
         path_cost = 0
 
         for i in range(0, 5):
-            closed_list[i] = {}
-            cost_added[i] = {}
-            heuristic_list[i] = {}
+            visited_cells[i] = {}
+            cost_accumulation[i] = {}
+            h_values[i] = {}
             for next in get_neighbors(start.get_x(), start.get_y()):
-                # print "current x %d current y %d" % current[0], current[1]
+
                 new_cost = get_cost(start.get_x(), start.get_y(), next[0], next[1])
-                if next not in cost_added[i] or new_cost < cost_added[i][next]:
-                    # if next not in closed_list or new_cost < cost_added[next]:
-                    cost_added[i][next] = new_cost  # g
-                    myheuristic = self.heuristic(next[0], next[1], goal_x, goal_y, i + 1)
-                    priority = new_cost + myheuristic
-                    heuristic_list[i][next] = myheuristic
-                    priority_list[i][next] = priority
-                    fringe[i].put(Point(next[0], next[1], start), priority)
-                    closed_list[i][next] = start
-            closed_list[i][(start.get_x(), start.get_y())] = None
-            cost_added[i][(start.get_x(), start.get_y())] = 0
-            cost_added[i][(goalx, goaly)] = float("inf")
 
+                if next not in cost_accumulation[i] or new_cost < cost_accumulation[i][next]:
 
+                    cost_accumulation[i][next] = new_cost  # g
+                    h_val = self.heuristic(next[0], next[1], goal_x, goal_y, i + 1)
+                    priority = new_cost + h_val
+                    h_values[i][next] = h_val
+                    pList[i][next] = priority
+                    fringe[i].put(priority, Point(next[0], next[1], start))
+                    visited_cells[i][next] = start
+            visited_cells[i][(start.get_x(), start.get_y())] = None
+            cost_accumulation[i][(start.get_x(), start.get_y())] = 0
+            cost_accumulation[i][(goalx, goaly)] = float("inf")
+
+        head = fringe[0].getFull()
         while not fringe[0].empty():
-            anchor = fringe[0].getFull()
             for i in range(1, 5):
-                # anchor is a tuple (item, priority)
-                temp = fringe[i].getFull()  # temp is a tuple (item, priority)
 
-                if temp != -1 and temp[1] <= w2 * anchor[1]:  # main condition
-                    if temp[0].get_x() == goalx and temp[0].get_y() == goaly:
+                temp = fringe[i].getFull()
+
+
+                if temp != -1 and temp[0] <= weight_val * head[0]:
+
+                    if temp[1].get_x() == goalx and temp[1].get_y() == goaly:
+
                         path_cost = 0
-                        # Make a straight path from goal to start
-                        PathNode = temp[0]
-                        old_x = PathNode.get_x()
-                        old_y = PathNode.get_y()
+
+                        path_pointer = temp[1]
+                        old_x = path_pointer.get_x()
+                        old_y = path_pointer.get_y()
                         final_path.append((old_x, old_y))
-                        PathNode = PathNode.get_parent()
+                        path_pointer = path_pointer.get_parent()
 
-                        while PathNode != None:
-                            path_cost += get_cost(PathNode.get_x(), PathNode.get_y(), old_x, old_y)
-                            final_path.append((PathNode.get_x(), PathNode.get_y()))
-                            # print "Path: " + str(current.get_x()) + "," + str(current.get_y())
-                            old_x = PathNode.get_x()
-                            old_y = PathNode.get_y()
-                            PathNode = PathNode.get_parent()
+                        while path_pointer != None:
+                            path_cost += get_cost(path_pointer.get_x(), path_pointer.get_y(), old_x, old_y)
+                            final_path.append((path_pointer.get_x(), path_pointer.get_y()))
+                            old_x = path_pointer.get_x()
+                            old_y = path_pointer.get_y()
+                            path_pointer = path_pointer.get_parent()
 
-                        # break
-                        return closed_list, cost_added, final_path, path_cost, priority_list, heuristic_list
+                        return visited_cells, cost_accumulation, final_path, path_cost, pList, h_values
                     else:
-                        # print "adding to fringe[" + str(i)+"]"
-                        for next in get_neighbors(temp[0].get_x(), temp[0].get_y()):
-                            # print "current x %d current y %d" % current[0], current[1]
-                            new_cost = cost_added[i][(temp[0].get_x(), temp[0].get_y())] + get_cost(temp[0].get_x(),
-                                                                                                    temp[0].get_y(),
-                                                                                                    next[0], next[1])
+                        for next in get_neighbors(temp[1].get_x(), temp[1].get_y()):
+                            new_cost = cost_accumulation[i][(temp[1].get_x(), temp[1].get_y())] + get_cost(temp[1].get_x(),
+                                                                                                temp[1].get_y(),
+                                                                                                next[0], next[1])
 
-                            if next not in cost_added[i] or new_cost < cost_added[i][next]:
-                                # print "Added neighbor"
-                                # if next not in closed_list or new_cost < cost_added[next]:
-                                cost_added[i][next] = new_cost  # g
-                                myheuristic = self.heuristic(next[0], next[1], goalx, goaly, i + 1)
-                                priority = new_cost + myheuristic
-                                heuristic_list[i][next] = myheuristic
-                                priority_list[i][next] = priority
-                                fringe[i].put(Point(next[0], next[1], temp[0]), priority)
-                                closed_list[i][next] = temp[0]
+                            if next not in cost_accumulation[i] or new_cost < cost_accumulation[i][next]:
+                                cost_accumulation[i][next] = new_cost  # g
+                                h_val = self.heuristic(next[0], next[1], goalx, goaly, i + 1)
+                                priority = new_cost + h_val
+                                h_values[i][next] = h_val
+                                pList[i][next] = priority
+                                fringe[i].put(priority, Point(next[0], next[1], temp[1]))
+                                visited_cells[i][next] = temp[1]
 
                 else:
-                    # print "------------- Reached the else condition, using fringe[0] ---------------"
-                    if anchor[0].get_x() == goalx and anchor[0].get_y() == goaly:
-                        # Found goal, return path
-                        print "Made it to goal at " + str(goal[0]) + "," + str(goal[1])
+                    if head[1].get_x() == goalx and head[1].get_y() == goaly:
                         path_cost = 0
-                        # Make a straight path from goal to start
-                        PathNode = anchor[0]
-                        old_x = PathNode.get_x()
-                        old_y = PathNode.get_y()
+                        path_pointer = head[1]
+                        old_x = path_pointer.get_x()
+                        old_y = path_pointer.get_y()
                         final_path.append((old_x, old_y))
-                        PathNode = PathNode.get_parent()
+                        path_pointer = path_pointer.get_parent()
 
-                        while PathNode != None:
-                            path_cost += get_cost(PathNode.get_x(), PathNode.get_y(), old_x, old_y)
-                            final_path.append((PathNode.get_x(), PathNode.get_y()))
-                            # print "Path: " + str(current.get_x()) + "," + str(current.get_y())
-                            old_x = PathNode.get_x()
-                            old_y = PathNode.get_y()
-                            PathNode = PathNode.get_parent()
-
-                        # break
-                        return closed_list, cost_added, final_path, path_cost, priority_list, heuristic_list
+                        while path_pointer != None:
+                            path_cost += get_cost(path_pointer.get_x(), path_pointer.get_y(), old_x, old_y)
+                            final_path.append((path_pointer.get_x(), path_pointer.get_y()))
+                            old_x = path_pointer.get_x()
+                            old_y = path_pointer.get_y()
+                            path_pointer = path_pointer.get_parent()
+                        return visited_cells, cost_accumulation, final_path, path_cost, pList, h_values
                     else:
-                        # print "-------------- adding to fringe[0] ---------------"
-                        for next in get_neighbors(anchor[0].get_x(), anchor[0].get_y()):
-                            # print "current x %d current y %d" % current[0], current[1]
-                            new_cost = cost_added[0][(anchor[0].get_x(), anchor[0].get_y())] + get_cost(
-                                anchor[0].get_x(),
-                                anchor[0].get_y(),
-                                next[0], next[1])
+                        for next in get_neighbors(head[1].get_x(), head[1].get_y()):
+                            new_cost = cost_accumulation[0][(head[1].get_x(), head[1].get_y())] + get_cost(head[1].get_x(),
+                                                                                                    head[1].get_y(),
+                                                                                                    next[0], next[1])
 
-                            if next not in cost_added[0] or new_cost < cost_added[0][next]:
-                                # print "Added neighbor"
-                                # if next not in closed_list or new_cost < cost_added[next]:
-                                cost_added[0][next] = new_cost  # g
-                                myheuristic = self.heuristic(next[0], next[1], goalx, goaly, 1)
-                                priority = new_cost + myheuristic
-                                heuristic_list[0][next] = myheuristic
-                                priority_list[0][next] = priority
-                                fringe[0].put(Point(next[0], next[1], anchor[0]), priority)
-                                closed_list[0][next] = anchor[0]
+                            if next not in cost_accumulation[0] or new_cost < cost_accumulation[0][next]:
 
-        return closed_list, cost_added, final_path, path_cost, priority_list, heuristic_list
+                                cost_accumulation[0][next] = new_cost  # g
+                                h_val = self.heuristic(next[0], next[1], goalx, goaly, 1)
+                                priority = new_cost + h_val
+                                h_values[0][next] = h_val
+                                pList[0][next] = priority
+                                fringe[0].put(priority, Point(next[0], next[1], head[1]))
+                                visited_cells[0][next] = head[1]
+                    head = fringe[0].getFull()
 
-    def heuristic(self, startx, starty, goalx, goaly, type):
-        super(SequentialAStarSearch, self).heuristic(startx, starty, goalx, goaly, type)
-
-
-# Draw and fill cells
+        return visited_cells, cost_accumulation, final_path, path_cost, pList, h_values
 
 def draw(surf):
     surf.fill((255, 255, 255))
@@ -803,7 +791,12 @@ while (running):
 
                 cells_checked = len(closed_list)
             elif event.key == pygame.K_q:
-                search = AStarSearch()
+                MySearch = SequentialAStarSearch()
+                start_time = time.time()
+                closed_lists, cell_costs, final_path, path_cost, priority_list, heuristic_list = MySearch.Search(
+                    start_x, start_y, goal_x, goal_y)
+                elapsed_time = time.time() - start_time
+                closed_list = []
 
         draw_ui(GridSurface, closed_list, found_path, path_cost, cells_checked, timer, cell_costs,
                 pList, h_values, mapcount)
