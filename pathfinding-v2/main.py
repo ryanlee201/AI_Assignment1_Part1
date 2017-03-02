@@ -292,9 +292,8 @@ def heuristic(self, startx, starty, goalx, goaly, choice):
 
     if choice == 1:  # manhattan
         heuristic = abs(int(startx) - int(goalx)) + abs(int(starty) - int(goaly))
-        heuristic *= (
-            1.0 + (0.25 / 160))
-        return heuristic
+        heuristic *= (1.0 + (0.25 / 160))
+        return heuristic*0.25
     if choice == 2:  # euclidean
         heuristic = math.sqrt(((int(startx) - int(goalx)) ** 2) + ((int(starty) - int(goaly)) ** 2))
         heuristic *= (
@@ -361,7 +360,7 @@ class AStarSearch(object):
             heuristic *= (
                 1.0 + (
                     0.25 / 160))
-            return heuristic
+            return heuristic*0.25
         if type == 2:  # euclidean
             heuristic = math.sqrt(((int(startx) - int(goalx)) ** 2) + ((int(starty) - int(goaly)) ** 2))
             heuristic *= (
@@ -748,7 +747,7 @@ while (running):
                 if pointer_y + 1 < NUM_ROW:
                     pointer_y += 1
             elif event.key == pygame.K_a:
-                hType = 4
+                hType = 1
                 search = AStarSearch()
                 start_time = time.time()
                 closed_list, cell_costs, found_path, path_cost, pList, h_values = search.findPath(
@@ -768,7 +767,7 @@ while (running):
                     start_y,
                     goal_x,
                     goal_y,
-                    1)
+                    4)
                 timer = time.time() - start_time
                 cells_checked = len(closed_list)
 
