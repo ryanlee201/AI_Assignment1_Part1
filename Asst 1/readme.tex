@@ -1,0 +1,108 @@
+\documentclass[a4paper]{article}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Sets page size and margins
+\usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\usepackage[section]{placeins}
+\usepackage{float}
+
+\title{Readme}
+\author{Ryan Lee (rl477), Dean Keinan ()}
+
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+CS: 440 Assignment 1 Phase 2. Uses Sequential Heurisitc A* and Integrated Heurisitic A* to traverse a map with differnet terrain properties for each cell.
+
+\section{User Interface}
+
+(n): Generates a new map\\
+(e): Creates new endpoints on the current map\\
+(s): saves map to folder /gen\\
+(l): loads map from folder /gen\\
+(q): Perfroms Sequential Heurisitc A* on the map\\
+(i): Performs Integrated Heurisitc A* on the map\\
+(h): Choice heurisitc
+
+\section{Question}
+
+\subsection{g}
+
+First Column: Search Type\\
+Second Column: Heuristic Used\\
+Third Column: Average Elapsed Time\\
+Foruth Column: Average Path Cost\\
+Fifth Column: Average Nodes Expanded\\
+Sixth Column: Average Memory Usage\\
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|c|c|c|c|c|c|}
+\hline
+UCS & (None) & 544.872 & 108.221 & 11218.76 & 114905.0533\\ 
+\hline
+A* & 1 & 50.548 & 148.504 & 1212.066 & 74891.24\\ 
+\hline
+A* & 2 & 8.036 & 163.528 & 393.99 & 71621.893\\ 
+\hline
+A* & 3 & 6.636 & 157.085 & 387.55 & 71596.213\\ 
+\hline
+A* & 4 & 8.186 & 157.721 & 403.683 & 71660.746\\ 
+\hline
+A* & 5 & 7.477 & 157.168 & 388.856 & 71601.6\\ 
+\hline
+A* (Weight 1.25) & 1 & 6.993 & 154.870 & 378.096 & 71562.56\\ 
+\hline
+A* (Weight 1.25) & 2 & 7.502 & 165.899 & 390.363 & 71613.546\\ 
+\hline
+A* (Weight 1.25) & 3 & 7.701 & 159.434 & 384.463 & 71591.866\\ 
+\hline
+A* (Weight 1.25) & 4 & 7.766 & 161.931 & 391.836 & 71624\\ 
+\hline
+A* (Weight 1.25) & 5 & 7.592 & 159.775 & 385.65 & 71599.253\\ 
+\hline
+A* (Weight 2) & 1 & 6.862 & 158.326 & 378.483 & 71570.986\\ 
+\hline
+A* (Weight 2) & 2 & 7.513 & 167.250 & 389.933 & 71616.786\\ 
+\hline
+A* (Weight 2) & 3 & 7.423 & 165.339 & 383.083 & 71589.386\\ 
+\hline
+A* (Weight 2) & 4 & 7.522 & 163.366 & 388.773 & 71613.106\\ 
+\hline
+A* (Weight 2) & 5 & 7.290 & 165.040 & 383.463 & 71591.866\\ 
+\hline
+Sequential Heuristics A* (Weight 1.5) & (All) & 28.836 & 155.495 & 776.9266 & 73189.16\\
+\hline
+Integrated Heuristics A* (Weight 1.5) & (All) & 485.213 & 127.394 & 8089.566 & 102445.720\\ 
+\hline
+Sequential Heuristics A* (Weight 2) & (All) & 1073.017 & 118.444 & 5525.440 & 102305.040\\ 
+\hline
+Integrated Heuristics A* (Weight 2) & (All) & 954.724 & 135.244 & 7003.26 & 108232.159\\ 
+\hline
+\hline\end{tabular}
+\caption{Heuristic Type(1: Euclidian, 2: Manhattan, 3: Octile, 4: Chebyshev, 5: Straight Diagonal Distance) }
+\label{table:table}
+\caption{\small{}} 
+\end{table}
+
+\subsection{h}
+
+From our analysis Integrated and Sequential Heuristic A* take longer than any of the other searches with the expection of Uniform Cost Search where Sequential and Integrated Heuristc A* with a weight of 1.5 were faster. This could be because these two algorithms are using every heurisitc instead of a specific one and that could cause the average elapsed time to be longer than the others. Average path cost is lower than every other search sinces it choices the best path based off the heuristc that gives them the minimum value. The average number of nodes expanded is greater than the other algorithms with the expcetion of Uniform Cost Search. Average memory usage follows the same trend as average nodes expanded but that is to be expected because they are correlated. 
+
+\subsection{i,j}
+
+Proof: Any statesis only explored when it is chosen as the state with thehighest priority inOPENiWhen s is chosen for expansion, ExpandState is called andsis re-moved from all existing open queues. At this point, states not includ-ing the start state can only be inserted into the inadmissible openqueues. The algorithm maintains that an expanded states belongingto any of the inadmissible searches, cannot be reexpanded by anyof the inadmissible searches. It follows that a state may only be ex-panded once by any of the inadmissible searches. Let’s now examinethe case when a state s is expanded by the admissible search. Hereas before, s is removed from all open queues. Thus, in this case s isnot part of any of the open lists at this point. The statescan onlybe expanded again by any search, if the state is added to the openqueues further in time. They can only be inserted in ExpandStateand ifshas been expanded in the admissible search, ExpandStateguards against this scenario s will never be reexpanded. Therefore,a state expanded by the admissible search will never be reexpanded.Since it is guaranteed that s can only be expanded one time by theadmissible search and one time by any of the inadmissible searches,it follows that in the worst-case s is expanded twice during the fullsearch. Let’s now prove the last case (iii), given a statesthat aninadmissible search has expanded,smay be expanded in the admissi-ble search only if the state has the highest priority in the admissiblesearch’s open queue. Notice that when s was previously expandedby an inadmissible search it was removed from all the inadmissibleopen queues. What follows from this result is thatsmay only beselected from the admissible search’s open queue further in time ifthe state has been re-inserted to the open queue. A given state mayonly be inserted in any search’s open list when the g cost is less thanthe previously computed g cost. It follows that given a stateswitha g-cost that is not lower after being expanded by any inadmissiblesearch will never satisfy the guards made by the algorithm andswillnot be re-inserted to the admissible search’s open queue. Therefore,a state expanded in an inadmissible search can only be re-expandedin the anchor search if its g-value is lowered.
+
+\end{document}
